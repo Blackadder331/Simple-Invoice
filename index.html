@@ -1,292 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Invoice Generator</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
 </head>
 <body>
-  <h1>Invoice Generator</h1>
-  <form>
-    <label for="clientName">Client Name:</label>
-    <input type="text" id="clientName" name="clientName"><br><br>
-    
-    <label for="itemDescription">Item Description:</label>
-    <input type="text" id="itemDescription" name="itemDescription">
-    
-    <label for="itemPrice">Item Price:</label>
-    <input type="number" id="itemPrice" name="itemPrice"><br><br>
-    
-    <button type="button" onclick="addItem()">Add Item</button>
-  </form>
-  <br><br>
-  <table id="invoiceTable">
-    <tr>
-      <th>Item Description</th>
-      <th>Item Price</th>
-      <th></th>
-    </tr>
-  </table>
-  <br><br>
-
-  <form>
-    <label for="taxRate">Tax Rate (%):</label>
-    <input type="number" id="taxRate" name="taxRate" min="0"><br><br>
-    
-    <label for="discountAmount">Discount Amount:</label>
-    <input type="number" id="discountAmount" name="discountAmount" min="0"><br><br>
-    
-    <button type="button" onclick="applyTaxesAndDiscounts()">Apply Taxes and Discounts</button>
-  </form>
-  <br><br>
-  <p>
-    Subtotal: $<span id="subtotal">0.00</span><br>
-    Taxes: $<span id="taxes">0.00</span><br>
-    Discounts: $<span id="discounts">0.00</span><br>
-    <!-- Total: $<span id="total">0.00</span> -->
-  </p>
   
+  <div id="invoice">
+    <h1>Invoice</h1>
+    <div id="client-name">
+      <label for="name">Client name:</label>
+      <input type="text" id="name" name="name" placeholder="Enter client name">
+    </div>
+    <div id="line-items">
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Remove</th>
+          </tr>
+        </thead>
+        <tbody id="items">
+          <!-- Line items will be added here dynamically -->
+        </tbody>
+      </table>
+      <button id="add-item">Add item</button>
+    </div>
 
+    <br>
+    <!-- <div id="sales-tax">
+      <label for="tax">Sales tax:</label>
+      <input type="number" id="tax" name="tax" min="0" step="0.01" placeholder="Enter sales tax percentage">
+    </div>
+    <div id="discount">
+      <label for="discount">Discount:</label>
+      <input type="number" id="discount" name="discount" min="0" step="0.01" placeholder="Enter discount percentage">
+    </div>
+    <div id="subtotal">
+      <p>Subtotal: $<span id="subtotal-amount">0</span></p>
+    </div> -->
+    <div id="total">
+      <p>Total: $<span id="total-amount">0</span></p>
+    </div>
 
-  
-  <p>Total: $<span id="total">0.00</span></p>
-
-  <button type="button" onclick="generatePDF()">Generate PDF</button>
-    
-  <!-- TEST -->
-  <!-- <div id="invoice">
-  <h1>Invoice</h1>
-  <div id="client-name">
-    <label for="name">Client name:</label>
-    <input type="text" id="name" name="name" placeholder="Enter client name">
-  </div>
-  <div id="line-items">
-    <table>
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th>Price</th>
-          <th>Remove</th>
-        </tr>
-      </thead>
-      <tbody id="items">
  
-    </tbody>
-    </table>
-    <button id="add-item">Add item</button>
   </div>
-  <div id="total">
-    <p>Total: $<span id="total-amount">0</span></p>
-  </div> -->
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
-
+  
+  
+  
   <script>
-    let invoiceItems = [];
 
-    function addItem() {
-    const itemDescription = document.getElementById("itemDescription").value;
-    const itemPrice = parseFloat(document.getElementById("itemPrice").value);
-
-    if (itemDescription === "" || isNaN(itemPrice)) {
-        return;
-    }
-
-    invoiceItems.push({ itemDescription, itemPrice });
-
-    const invoiceTable = document.getElementById("invoiceTable");
-    const newRow = invoiceTable.insertRow();
-    const descriptionCell = newRow.insertCell(0);
-    const priceCell = newRow.insertCell(1);
-    const deleteCell = newRow.insertCell(2);
-
-    descriptionCell.innerText = itemDescription;
-    priceCell.innerText = `$${itemPrice.toFixed(2)}`;
-    deleteCell.innerHTML = '<button type="button" onclick="removeItem(this)">Delete</button>';
-    
-    document.getElementById("itemDescription").value = "";
-    document.getElementById("itemPrice").value = "";
-    }
-
-    function removeItem(button) {
-    const row = button.parentNode.parentNode;
-    const index = row.rowIndex - 1;
-    invoiceItems.splice(index, 1);
-    document.getElementById("invoiceTable").deleteRow(row.rowIndex);
-    }
-
-    function calculateTotals() {
-    let subtotal = 0;
-
-    invoiceItems.forEach(item => {
-        subtotal += item.itemPrice;
+  // JavaScript code for invoice logic
+  // Get HTML elements
+  const nameInput = document.getElementById("name");
+  const itemsTable = document.getElementById("items");
+  const addItemButton = document.getElementById("add-item");
+  const totalAmountSpan = document.getElementById("total-amount");
+  const generatePdfButton = document.getElementById("generate-pdf");
+  
+  // Initialize variables
+  let items = []; // Array of line items
+  let total = 0; // Total amount
+  
+  // Function to add a new line item
+  function addItem() {
+    // Create a new item object with default values
+    const item = {
+      description: "",
+      price: 0,
+    };
+  
+    // Push the item to the items array
+    items.push(item);
+  
+    // Create a new table row element for the item
+    const row = document.createElement("tr");
+  
+    // Create a cell element for the description input
+    const descriptionCell = document.createElement("td");
+    const descriptionInput = document.createElement("input");
+    descriptionInput.type = "text";
+    descriptionInput.placeholder = "Enter description";
+    descriptionInput.value = item.description;
+  
+    // Add an event listener to update the item description when the input changes
+    descriptionInput.addEventListener("input", (event) => {
+      item.description = event.target.value;
     });
-
-    const taxRate = parseFloat(document.getElementById("taxRate").value) || 0;
-    const taxes = subtotal * (taxRate / 100);
-    const discountAmount = parseFloat(document.getElementById("discountAmount").value) || 0;
-    const discounts = discountAmount;
-    const total = subtotal + taxes - discounts;
-
-    document.getElementById("subtotal").innerText = subtotal.toFixed(2);
-    document.getElementById("taxes").innerText = taxes.toFixed(2);
-    document.getElementById("discounts").innerText = discounts.toFixed(2);
-    document.getElementById("total").innerText = total.toFixed(2);
-
-    }
-
-    function applyTaxesAndDiscounts() {
-    calculateTotals();
-    }
-    
-
-//PDF
-const { jsPDF } = window.jspdf;
-function generatePDF() {
-  const doc = new jsPDF();
   
-  // Add client name to PDF
-  const clientName = document.getElementById("clientName").value;
-  doc.text(`Invoice for: ${clientName}`, 20, 20);
+    // Append the input to the cell and the cell to the row
+    descriptionCell.appendChild(descriptionInput);
+    row.appendChild(descriptionCell);
   
-  // Add table to PDF
-  const rows = [];
-  const table = document.getElementById("invoiceTable");
-  for (let i = 0; i < table.rows.length; i++) {
-    const row = [];
-    for (let j = 0; j < table.rows[i].cells.length; j++) {
-      row.push(table.rows[i].cells[j].innerText);
-    }
-    rows.push(row);
+    // Create a cell element for the price input
+    const priceCell = document.createElement("td");
+    const priceInput = document.createElement("input");
+    priceInput.type = "number";
+    priceInput.min = "0";
+    priceInput.step = "0.01";
+    priceInput.placeholder = "Enter price";
+    priceInput.value = item.price;
+  
+    // Add an event listener to update the item price and the total amount when the input changes
+    priceInput.addEventListener("input", (event) => {
+      // Parse the input value as a number
+      const price = parseFloat(event.target.value);
+  
+      // Update the item price
+      item.price = price;
+  
+      // Calculate the new total by summing up all the item prices
+      total = items.reduce((sum, item) => sum + item.price, 0);
+  
+      // Update the total amount span with the formatted total value
+      totalAmountSpan.textContent = total.toFixed(2);
+    });
+  
+    // Append the input to the cell and the cell to the row
+    priceCell.appendChild(priceInput);
+    row.appendChild(priceCell);
+  
+      // Create a cell element for the remove button
+    const removeCell = document.createElement("td");
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "Remove";
+  
+    // Add an event listener to remove the item and the row when the button is clicked
+    removeButton.addEventListener("click", () => {
+      // Find the index of the item in the items array
+      const index = items.indexOf(item);
+  
+      // Remove the item from the items array
+      items.splice(index, 1);
+  
+      // Remove the row from the table
+      row.remove();
+  
+      // Calculate the new total by summing up all the item prices
+      total = items.reduce((sum, item) => sum + item.price, 0);
+  
+      // Update the total amount span with the formatted total value
+      totalAmountSpan.textContent = total.toFixed(2);
+    });
+  
+    // Append the button to the cell and the cell to the row
+    removeCell.appendChild(removeButton);
+    row.appendChild(removeCell);
+  
+    // Append the row to the table body
+    itemsTable.appendChild(row);
   }
-  doc.autoTable({
-    head: [['Item Description', 'Item Price']],
-    body: rows,
-    startY: 50
-  });
   
-  // Add totals to PDF
-  const subtotal = document.getElementById("subtotal").innerText;
-  const taxes = document.getElementById("taxes").innerText;
-  const discounts = document.getElementById("discounts").innerText;
-  doc.text(`Subtotal: ${subtotal}`, 20, doc.autoTable.previous.finalY + 10);
-  doc.text(`Taxes: ${taxes}`, 20, doc.autoTable.previous.finalY + 20);
-  doc.text(`Discounts: ${discounts}`, 20, doc.autoTable.previous.finalY + 30);
-  doc.text(`Total: ${total}`, 20, doc.autoTable.previous.finalY + 40);
+  // Add an event listener to call addItem when the add item button is clicked
+  addItemButton.addEventListener("click", addItem);
   
-  // Save PDF
-  doc.save("invoice.pdf");
-}       
+    
+  
+</script>
 
 
-//TEST FROM OPTION 2 -- Need to merge
-// Get HTML elements
-// const nameInput = document.getElementById("name");
-//   const itemsTable = document.getElementById("items");
-//   const addItemButton = document.getElementById("add-item");
-//   const totalAmountSpan = document.getElementById("total-amount");
-//   const generatePdfButton = document.getElementById("generate-pdf");
-  
-//   // Initialize variables
-//   let items = []; // Array of line items
-//   let total = 0; // Total amount
-  
-//   // Function to add a new line item
-//   function addItem() {
-//     // Create a new item object with default values
-//     const item = {
-//       description: "",
-//       price: 0,
-//     };
-  
-//     // Push the item to the items array
-//     items.push(item);
-  
-//     // Create a new table row element for the item
-//     const row = document.createElement("tr");
-  
-//     // Create a cell element for the description input
-//     const descriptionCell = document.createElement("td");
-//     const descriptionInput = document.createElement("input");
-//     descriptionInput.type = "text";
-//     descriptionInput.placeholder = "Enter description";
-//     descriptionInput.value = item.description;
-  
-//     // Add an event listener to update the item description when the input changes
-//     descriptionInput.addEventListener("input", (event) => {
-//       item.description = event.target.value;
-//     });
-  
-//     // Append the input to the cell and the cell to the row
-//     descriptionCell.appendChild(descriptionInput);
-//     row.appendChild(descriptionCell);
-  
-//     // Create a cell element for the price input
-//     const priceCell = document.createElement("td");
-//     const priceInput = document.createElement("input");
-//     priceInput.type = "number";
-//     priceInput.min = "0";
-//     priceInput.step = "0.01";
-//     priceInput.placeholder = "Enter price";
-//     priceInput.value = item.price;
-  
-//     // Add an event listener to update the item price and the total amount when the input changes
-//     priceInput.addEventListener("input", (event) => {
-//       // Parse the input value as a number
-//       const price = parseFloat(event.target.value);
-  
-//       // Update the item price
-//       item.price = price;
-  
-//       // Calculate the new total by summing up all the item prices
-//       total = items.reduce((sum, item) => sum + item.price, 0);
-  
-//       // Update the total amount span with the formatted total value
-//       totalAmountSpan.textContent = total.toFixed(2);
-//     });
-  
-//     // Append the input to the cell and the cell to the row
-//     priceCell.appendChild(priceInput);
-//     row.appendChild(priceCell);
-  
-//       // Create a cell element for the remove button
-//     const removeCell = document.createElement("td");
-//     const removeButton = document.createElement("button");
-//     removeButton.textContent = "Remove";
-  
-//     // Add an event listener to remove the item and the row when the button is clicked
-//     removeButton.addEventListener("click", () => {
-//       // Find the index of the item in the items array
-//       const index = items.indexOf(item);
-  
-//       // Remove the item from the items array
-//       items.splice(index, 1);
-  
-//       // Remove the row from the table
-//       row.remove();
-  
-//       // Calculate the new total by summing up all the item prices
-//       total = items.reduce((sum, item) => sum + item.price, 0);
-  
-//       // Update the total amount span with the formatted total value
-//       totalAmountSpan.textContent = total.toFixed(2);
-//     });
-  
-//     // Append the button to the cell and the cell to the row
-//     removeCell.appendChild(removeButton);
-//     row.appendChild(removeCell);
-  
-//     // Append the row to the table body
-//     itemsTable.appendChild(row);
-//   }
-  
-
-//       // Add an event listener to call addItem when the add item button is clicked
-//   addItemButton.addEventListener("click", addItem);
-  
-//   // Add an event listener to call generatePdf when the generate PDF button is clicked
-//   generatePdfButton.addEventListener("click", generatePdf);
-  
-
-  </script>
 </body>
 </html>

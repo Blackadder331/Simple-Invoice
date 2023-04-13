@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Invoice Generator</title>
+</head>
+<body>
+  <h1>Invoice Generator</h1>
+  <form>
+    <label for="clientName">Client Name:</label>
+    <input type="text" id="clientName" name="clientName"><br><br>
+    
+    <label for="itemDescription">Item Description:</label>
+    <input type="text" id="itemDescription" name="itemDescription">
+    
+    <label for="itemPrice">Item Price:</label>
+    <input type="number" id="itemPrice" name="itemPrice"><br><br>
+    
+    <button type="button" onclick="addItem()">Add Item</button>
+  </form>
+  <br><br>
+  <table id="invoiceTable">
+    <tr>
+      <th>Item Description</th>
+      <th>Item Price</th>
+      <th></th>
+    </tr>
+  </table>
+  <br><br>
+
+  <form>
+    <label for="taxRate">Tax Rate (%):</label>
+    <input type="number" id="taxRate" name="taxRate" min="0"><br><br>
+    
+    <label for="discountAmount">Discount Amount:</label>
+    <input type="number" id="discountAmount" name="discountAmount" min="0"><br><br>
+    
+    <button type="button" onclick="applyTaxesAndDiscounts()">Apply Taxes and Discounts</button>
+  </form>
+  <br><br>
+  <p>
+    Subtotal: $<span id="subtotal">0.00</span><br>
+    Taxes: $<span id="taxes">0.00</span><br>
+    Discounts: $<span id="discounts">0.00</span><br>
+    <!-- Total: $<span id="total">0.00</span> -->
+  </p>
+  
+
+
+  
+  <p>Total: $<span id="total">0.00</span></p>
+
+  <button type="button" onclick="generatePDF()">Generate PDF</button>
+    
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    let invoiceItems = [];
+
+    function addItem() {
+    const itemDescription = document.getElementById("itemDescription").value;
+    const itemPrice = parseFloat(document.getElementById("itemPrice").value);
+
+    if (itemDescription === "" || isNaN(itemPrice)) {
+        return;
+    }
+
+    invoiceItems.push({ itemDescription, itemPrice });
+
+    const invoiceTable = document.getElementById("invoiceTable");
+    const newRow = invoiceTable.insertRow();
+    const descriptionCell = newRow.insertCell(0);
+    const priceCell = newRow.insertCell(1);
+    const deleteCell = newRow.insertCell(2);
+
+    descriptionCell.innerText = itemDescription;
+    priceCell.innerText = `$${itemPrice.toFixed(2)}`;
+    deleteCell.innerHTML = '<button type="button" onclick="removeItem(this)">Delete</button>';
+    
+    document.getElementById("itemDescription").value = "";
+    document.getElementById("itemPrice").value = "";
+    }
+
+    function removeItem(button) {
+    const row = button.parentNode.parentNode;
+    const index = row.rowIndex - 1;
+    invoiceItems.splice(index, 1);
+    document.getElementById("invoiceTable").deleteRow(row.rowIndex);
+    }
+
+    function calculateTotals() {
+    let subtotal = 0;
+
+    invoiceItems.forEach(item => {
+        subtotal += item.itemPrice;
+    });
+
+    const taxRate = parseFloat(document.getElementById("taxRate").value) || 0;
+    const taxes = subtotal * (taxRate / 100);
+    const discountAmount = parseFloat(document.getElementById("discountAmount").value) || 0;
+    const discounts = discountAmount;
+    const total = subtotal + taxes - discounts;
+
+    document.getElementById("subtotal").innerText = subtotal.toFixed(2);
+    document.getElementById("taxes").innerText = taxes.toFixed(2);
+    document.getElementById("discounts").innerText = discounts.toFixed(2);
+    document.getElementById("total").innerText = total.toFixed(2);
+
+    }
+
+    function applyTaxesAndDiscounts() {
+    calculateTotals();
+    }
+    
+
+//PDF
+const { jsPDF } = window.jspdf;
+function generatePDF() {
+  const doc = new jsPDF();
+  
+  // Add client name to PDF
+  const clientName = document.getElementById("clientName").value;
+  doc.text(`Invoice for: ${clientName}`, 20, 20);
+  
+  // Add table to PDF
+  const rows = [];
+  const table = document.getElementById("invoiceTable");
+  for (let i = 0; i < table.rows.length; i++) {
+    const row = [];
+    for (let j = 0; j < table.rows[i].cells.length; j++) {
+      row.push(table.rows[i].cells[j].innerText);
+    }
+    rows.push(row);
+  }
+  doc.autoTable({
+    head: [['Item Description', 'Item Price']],
+    body: rows,
+    startY: 50
+  });
+  
+  // Add totals to PDF
+  const subtotal = document.getElementById("subtotal").innerText;
+  const taxes = document.getElementById("taxes").innerText;
+  const discounts = document.getElementById("discounts").innerText;
+  doc.text(`Subtotal: ${subtotal}`, 20, doc.autoTable.previous.finalY + 10);
+  doc.text(`Taxes: ${taxes}`, 20, doc.autoTable.previous.finalY + 20);
+  doc.text(`Discounts: ${discounts}`, 20, doc.autoTable.previous.finalY + 30);
+  doc.text(`Total: ${total}`, 20, doc.autoTable.previous.finalY + 40);
+  
+  // Save PDF
+  doc.save("invoice.pdf");
+}       
+
+
+  </script>
+</body>
+</html>

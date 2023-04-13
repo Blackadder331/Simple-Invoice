@@ -51,7 +51,31 @@
 
   <button type="button" onclick="generatePDF()">Generate PDF</button>
     
-
+  <!-- TEST -->
+  <!-- <div id="invoice">
+  <h1>Invoice</h1>
+  <div id="client-name">
+    <label for="name">Client name:</label>
+    <input type="text" id="name" name="name" placeholder="Enter client name">
+  </div>
+  <div id="line-items">
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody id="items">
+ 
+    </tbody>
+    </table>
+    <button id="add-item">Add item</button>
+  </div>
+  <div id="total">
+    <p>Total: $<span id="total-amount">0</span></p>
+  </div> -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
@@ -153,6 +177,115 @@ function generatePDF() {
   doc.save("invoice.pdf");
 }       
 
+
+//TEST FROM OPTION 2 -- Need to merge
+// Get HTML elements
+// const nameInput = document.getElementById("name");
+//   const itemsTable = document.getElementById("items");
+//   const addItemButton = document.getElementById("add-item");
+//   const totalAmountSpan = document.getElementById("total-amount");
+//   const generatePdfButton = document.getElementById("generate-pdf");
+  
+//   // Initialize variables
+//   let items = []; // Array of line items
+//   let total = 0; // Total amount
+  
+//   // Function to add a new line item
+//   function addItem() {
+//     // Create a new item object with default values
+//     const item = {
+//       description: "",
+//       price: 0,
+//     };
+  
+//     // Push the item to the items array
+//     items.push(item);
+  
+//     // Create a new table row element for the item
+//     const row = document.createElement("tr");
+  
+//     // Create a cell element for the description input
+//     const descriptionCell = document.createElement("td");
+//     const descriptionInput = document.createElement("input");
+//     descriptionInput.type = "text";
+//     descriptionInput.placeholder = "Enter description";
+//     descriptionInput.value = item.description;
+  
+//     // Add an event listener to update the item description when the input changes
+//     descriptionInput.addEventListener("input", (event) => {
+//       item.description = event.target.value;
+//     });
+  
+//     // Append the input to the cell and the cell to the row
+//     descriptionCell.appendChild(descriptionInput);
+//     row.appendChild(descriptionCell);
+  
+//     // Create a cell element for the price input
+//     const priceCell = document.createElement("td");
+//     const priceInput = document.createElement("input");
+//     priceInput.type = "number";
+//     priceInput.min = "0";
+//     priceInput.step = "0.01";
+//     priceInput.placeholder = "Enter price";
+//     priceInput.value = item.price;
+  
+//     // Add an event listener to update the item price and the total amount when the input changes
+//     priceInput.addEventListener("input", (event) => {
+//       // Parse the input value as a number
+//       const price = parseFloat(event.target.value);
+  
+//       // Update the item price
+//       item.price = price;
+  
+//       // Calculate the new total by summing up all the item prices
+//       total = items.reduce((sum, item) => sum + item.price, 0);
+  
+//       // Update the total amount span with the formatted total value
+//       totalAmountSpan.textContent = total.toFixed(2);
+//     });
+  
+//     // Append the input to the cell and the cell to the row
+//     priceCell.appendChild(priceInput);
+//     row.appendChild(priceCell);
+  
+//       // Create a cell element for the remove button
+//     const removeCell = document.createElement("td");
+//     const removeButton = document.createElement("button");
+//     removeButton.textContent = "Remove";
+  
+//     // Add an event listener to remove the item and the row when the button is clicked
+//     removeButton.addEventListener("click", () => {
+//       // Find the index of the item in the items array
+//       const index = items.indexOf(item);
+  
+//       // Remove the item from the items array
+//       items.splice(index, 1);
+  
+//       // Remove the row from the table
+//       row.remove();
+  
+//       // Calculate the new total by summing up all the item prices
+//       total = items.reduce((sum, item) => sum + item.price, 0);
+  
+//       // Update the total amount span with the formatted total value
+//       totalAmountSpan.textContent = total.toFixed(2);
+//     });
+  
+//     // Append the button to the cell and the cell to the row
+//     removeCell.appendChild(removeButton);
+//     row.appendChild(removeCell);
+  
+//     // Append the row to the table body
+//     itemsTable.appendChild(row);
+//   }
+  
+
+//       // Add an event listener to call addItem when the add item button is clicked
+//   addItemButton.addEventListener("click", addItem);
+  
+//   // Add an event listener to call generatePdf when the generate PDF button is clicked
+//   generatePdfButton.addEventListener("click", generatePdf);
+  
 
   </script>
 </body>
